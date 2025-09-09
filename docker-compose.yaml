@@ -79,6 +79,13 @@ services:
       - VAULT_MOUNT_PKI=pki
       - VAULT_MOUNT_KV=secrets
       - CERT_MANAGER_ENABLED=false
+      - AUTH_CLIENT_ID=${AUTH_CLIENT_ID}
+      - AUTH_CLIENT_SECRET=${AUTH_CLIENT_SECRET}
+      - HUB_IAM_PROVIDER_URL=${AUTH_PROVIDER_URL}
+      - MOJALOOP_CONNECTOR_FQDN=conn-${PM4ML_DOMAIN}
+      - CALLBACK_URL=https://conn-${PM4ML_DOMAIN}
+      - MCM_SERVER_ENDPOINT=https://mcm.${SWITCH_DOMAIN}/pm4mlapi
+      - WHITELIST_IP=${WHITELIST_IP}
     env_file: ./.env
     volumes:
       - ./docker/vault/tmp:/vault
@@ -120,7 +127,7 @@ services:
     ports:
       - "6061:6060"
     environment:
-      - API_BASE_URL=http://localhost:5051
+      - API_BASE_URL=https://${PM4ML_DOMAIN}
       - AUTH_ENABLED=FALSE
     command:
       - sh
@@ -193,6 +200,13 @@ services:
       - FSPIOP_API_SERVER_MAX_REQUEST_BYTES=209715200
       - BACKEND_API_SERVER_MAX_REQUEST_BYTES=209715200
       - WSO2_BEARER_TOKEN=7718fa9b-be13-3fe7-87f0-a12cf1628168 # dummy value for SDK config
+      - OAUTH_CLIENT_KEY=${AUTH_CLIENT_ID}
+      - OAUTH_CLIENT_SECRET=${AUTH_CLIENT_SECRET}
+      - OAUTH_TOKEN_ENDPOINT=${AUTH_PROVIDER_URL}${AUTH_OIDC_TOKEN_ROUTE:-/realms/dfsps/protocol/openid-connect/token}
+      - PEER_ENDPOINT=extapi.${SWITCH_DOMAIN}
+      - ALS_ENDPOINT=extapi.${SWITCH_DOMAIN}
+      - FX_QUOTES_ENDPOINT=extapi.${SWITCH_DOMAIN}
+      - FX_TRANSFERS_ENPOINT=extapi.${SWITCH_DOMAIN}
     ports:
       - "443:4000"
       - "4000:4000"
