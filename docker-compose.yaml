@@ -79,7 +79,7 @@ services:
       - VAULT_MOUNT_PKI=pki
       - VAULT_MOUNT_KV=secrets
       - CERT_MANAGER_ENABLED=false
-    env_file: ./.env
+    env_file: ./.env.example
     volumes:
       - ./docker/vault/tmp:/vault
       - ./docker/management-api/resources:/resources
@@ -168,7 +168,7 @@ services:
       - "yarn start:api-svc"
     env_file:
       - ./default-config.env
-      - ./.env
+      - ./.env.example
     environment:
       - API_TYPE=iso20022
       - ILP_VERSION=4
