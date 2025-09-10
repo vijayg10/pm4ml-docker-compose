@@ -2,3 +2,5 @@ docker/vault/tmp
 .env
 .idea/
 core-connector-config.env
+docker/haproxy/certs/*.pem
+*-IGNORE*

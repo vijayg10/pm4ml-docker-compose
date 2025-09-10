@@ -2,9 +2,10 @@ services:
   frontend:
     image: pm4ml/mojaloop-payment-manager-ui:1.19.0
     environment:
-      - API_BASE_URL=http://localhost:4010
-    ports:
-      - "8081:8080"
+      - API_BASE_URL=https://portal.${PM4ML_DOMAIN}/api
+      - MANAGEMENT_API_BASE_URL=https://portal.${PM4ML_DOMAIN}/m-api
+    # ports:
+    #   - "8081:8080"
     depends_on:
       - experience-api
     profiles:
@@ -15,7 +16,7 @@ services:
     environment:
       - KEYCLOAK_USER=admin
       - KEYCLOAK_PASSWORD=admin
-      - KEYCLOAK_FRONTEND_URL=http://localhost:8080/auth
+      - KEYCLOAK_FRONTEND_URL=https://portal.${PM4ML_DOMAIN}/auth
       - KEYCLOAK_IMPORT=/tmp/pm4ml-realm.json
       - DB_VENDOR=h2
     volumes:
@@ -26,20 +27,20 @@ services:
       - portal
 
   experience-api:
-    image: pm4ml/mojaloop-payment-manager-experience-api:3.2.2
-    ports:
-      - "4010:3000"
+    image: infitx/mojaloop-payment-manager-experience-api:v3.2.2
+    # ports:
+    #   - "4010:3000"
     environment:
       - APP_KEYS={{ CHANGE BEFORE INSTALL e.g. ootu1yoo5geeS7izai4ox1Yae1Eey6ai}}
       - AUTH_CLIENT_ID=pm4ml-customer-ui
       - AUTH_CLIENT_SECRET=a857e3d7-ebd4-4451-aabd-bcb480dde1a3
       - AUTH_DISCOVERY_ENDPOINT=http://keycloak:8080/auth/realms/pm4ml/.well-known/openid-configuration
-      - AUTH_LOGGED_IN_LANDING_URL=http://localhost:8081/
+      - AUTH_LOGGED_IN_LANDING_URL=https://portal.${PM4ML_DOMAIN}/
       - AUTH_REDIRECT_NAME=pm4ml-customer-ui
-      - AUTH_REDIRECT_URI=http://localhost:4010/auth
+      - AUTH_REDIRECT_URI=https://portal.${PM4ML_DOMAIN}/api/auth
       - AUTH_RESOURCE_NAME=pm4ml-customer-ui
       - AUTH_SCOPES=roles
-      - DFSP_ID={{ CHANGE BEFORE INSTALL }}
+      - DFSP_ID=${DFSP_ID}
       - ENV_ID=1
       - MANAGEMENT_ENDPOINT=management-api:9000
       - METRICS_ENDPOINT=prometheus:9090
@@ -81,9 +82,9 @@ services:
       - CERT_MANAGER_ENABLED=false
       - AUTH_CLIENT_ID=${AUTH_CLIENT_ID}
       - AUTH_CLIENT_SECRET=${AUTH_CLIENT_SECRET}
-      - HUB_IAM_PROVIDER_URL=${AUTH_PROVIDER_URL}
-      - MOJALOOP_CONNECTOR_FQDN=conn-${PM4ML_DOMAIN}
-      - CALLBACK_URL=https://conn-${PM4ML_DOMAIN}
+      - HUB_IAM_PROVIDER_URL=https://keycloak.${SWITCH_DOMAIN}
+      - MOJALOOP_CONNECTOR_FQDN=ml-connect.${PM4ML_DOMAIN}
+      - CALLBACK_URL=https://ml-connect.${PM4ML_DOMAIN}
       - MCM_SERVER_ENDPOINT=https://mcm.${SWITCH_DOMAIN}/pm4mlapi
       - WHITELIST_IP=${WHITELIST_IP}
     env_file: ./.env
@@ -91,7 +92,7 @@ services:
       - ./docker/vault/tmp:/vault
       - ./docker/management-api/resources:/resources
     ports:
-      - "9000:9000"
+      # - "9000:9000"
       - "9050:9050"
     depends_on:
       redis:
@@ -112,9 +113,9 @@ services:
     image: mojaloop/ml-testing-toolkit:v18.15.1
     volumes:
       - "./docker/testing-toolkit/docker-compose/as-a-backend/spec_files:/opt/app/spec_files"
-    ports:
-      - "5052:4040"
-      - "5051:5050"
+    # ports:
+    #   - "5052:4040"
+    #   - "5051:5050"
     command:
       - sh
       - -c
@@ -124,10 +125,10 @@ services:
 
   ttk-frontend:
     image: mojaloop/ml-testing-toolkit-ui:v16.7.3
-    ports:
-      - "6061:6060"
+    # ports:
+    #   - "6061:6060"
     environment:
-      - API_BASE_URL=https://${PM4ML_DOMAIN}
+      - API_BASE_URL=https://ttk.${PM4ML_DOMAIN}
       - AUTH_ENABLED=FALSE
     command:
       - sh
@@ -164,8 +165,8 @@ services:
       - REDIS_PORT=6379
       - REDIS_REPLICATION_MODE=master
       - REDIS_TLS_ENABLED=no
-    ports:
-      - "6379:6379"
+    # ports:
+    #   - "6379:6379"
 
   sdk-scheme-adapter:
     image: mojaloop/sdk-scheme-adapter:v24.9.0
@@ -202,21 +203,20 @@ services:
       - WSO2_BEARER_TOKEN=7718fa9b-be13-3fe7-87f0-a12cf1628168 # dummy value for SDK config
       - OAUTH_CLIENT_KEY=${AUTH_CLIENT_ID}
       - OAUTH_CLIENT_SECRET=${AUTH_CLIENT_SECRET}
-      - OAUTH_TOKEN_ENDPOINT=${AUTH_PROVIDER_URL}${AUTH_OIDC_TOKEN_ROUTE:-/realms/dfsps/protocol/openid-connect/token}
+      - OAUTH_TOKEN_ENDPOINT=https://keycloak.${SWITCH_DOMAIN}${AUTH_OIDC_TOKEN_ROUTE:-/realms/dfsps/protocol/openid-connect/token}
       - PEER_ENDPOINT=extapi.${SWITCH_DOMAIN}
       - ALS_ENDPOINT=extapi.${SWITCH_DOMAIN}
       - FX_QUOTES_ENDPOINT=extapi.${SWITCH_DOMAIN}
       - FX_TRANSFERS_ENPOINT=extapi.${SWITCH_DOMAIN}
-    ports:
-      - "443:4000"
-      - "4000:4000"
-      - "4001:4001"
-    # volumes:
-    #   - ./inbound-cacert.pem:/secrets/inbound-cacert.pem
-    #   - ./inbound-cert.pem:/secrets/inbound-cert.pem
-    #   - ./inbound-key.pem:/secrets/inbound-key.pem
-    #   - ./secrets/jwsSigningKey.key:/jwsSigningKey.key
-    #   - ./secrets/jwsVerificationKeys:/jwsVerificationKeys
+    # ports:
+    #   - "4000:4000"
+    #   - "4001:4001"
+    volumes:
+      - ./docker/sdk-scheme-adapter/inbound-cacert.pem:/secrets/inbound-cacert.pem
+      - ./docker/sdk-scheme-adapter/inbound-cert.pem:/secrets/inbound-cert.pem
+      - ./docker/sdk-scheme-adapter/inbound-key.pem:/secrets/inbound-key.pem
+      - ./docker/sdk-scheme-adapter/jwsSigningKey.key:/jwsSigningKey.key
+      - ./docker/sdk-scheme-adapter/jwsVerificationKeys:/jwsVerificationKeys
     restart: always
     depends_on:
       management-api:
@@ -235,8 +235,8 @@ services:
       - VAULT_ADDR=http://localhost:8233
     cap_add:
       - IPC_LOCK
-    ports:
-      - "8233:8233"
+    # ports:
+    #   - "8233:8233"
     command: server
     restart: unless-stopped
 
@@ -255,6 +255,63 @@ services:
     restart: on-failure
     depends_on:
       - vault
+
+  haproxy:
+    image: haproxy:2.8-alpine
+    container_name: haproxy
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8404:8404"  # Stats interface
+    volumes:
+      - ./docker/haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+      - ./docker/haproxy/certs:/etc/ssl/certs:ro
+    depends_on:
+      - frontend
+      - experience-api
+      - management-api
+      - keycloak
+      - ttk-frontend
+      - prometheus
+    restart: unless-stopped
+    profiles:
+      - gateway
+
+  # envoy-gateway:
+  #   container_name: envoy-gateway
+  #   image: envoyproxy/gateway:v1.5.0
+  #   ports:
+  #     - "443:8443"
+  #     - "8443:8443"
+  #     - "8888:8888"
+  #     - "19000:19000"
+  #     - "19001:19001"
+  #     - "80:8888"
+  #   volumes:
+  #     - ./docker/envoy-gateway/resources:/envoy-gateway-resources
+  #     - ./docker/envoy-gateway/standalone.yaml:/etc/standalone.yaml
+  #     # - ./certs/envoy-oidc-hmac:/tmp/envoy-gateway/certs/envoy-oidc-hmac
+  #     # - ./certs/envoy:/tmp/envoy-gateway/certs/envoy
+  #     # - ./certs/envoy-gateway:/tmp/envoy-gateway/certs/envoy-gateway
+  #     # - ./tmp:/tmp/envoy-gateway
+  #     # - ./certs:/etc/envoy-gateway/certs
+  #   command: server --config-path /etc/standalone.yaml
+  #   # environment:
+  #     # - EG_EXTENSION_APIS_ENABLE_BACKEND=true
+  #     # - EG_EXTENSION_APIS_ENABLE_OAUTH=true
+  #     # - ENVOY_GATEWAY_NAMESPACE=envoy-gateway-system
+  #     # - EG_GATEWAY_CONTROLLER_NAME=gateway.envoyproxy.io/gatewayclass-controller
+  #     # - EG_PROVIDER_TYPE=Custom
+  #     # - EG_PROVIDER_CUSTOM_RESOURCE_TYPE=File
+  #     # - EG_PROVIDER_CUSTOM_RESOURCE_FILE_PATHS=/etc/envoy-gateway/resource.yaml
+  #     # - EG_PROVIDER_CUSTOM_INFRASTRUCTURE_TYPE=Host
+  #     # - EG_LOG_LEVEL=debug
+  #   # depends_on:
+  #   #   - redis
+  #   #   - test-backend
+  #   #   - keycloak
+  #   profiles:
+  #     - gateway
 
 networks:
   default:
