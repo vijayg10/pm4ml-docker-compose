@@ -113,9 +113,8 @@ services:
     image: mojaloop/ml-testing-toolkit:v18.15.1
     volumes:
       - "./docker/testing-toolkit/docker-compose/as-a-backend/spec_files:/opt/app/spec_files"
-    # ports:
-    #   - "5052:4040"
-    #   - "5051:5050"
+    ports:
+      - "5050:5050"
     command:
       - sh
       - -c
@@ -125,8 +124,8 @@ services:
 
   ttk-frontend:
     image: mojaloop/ml-testing-toolkit-ui:v16.7.3
-    # ports:
-    #   - "6061:6060"
+    ports:
+      - "6060:6060"
     environment:
       - API_BASE_URL=https://ttk.${PM4ML_DOMAIN}
       - AUTH_ENABLED=FALSE
