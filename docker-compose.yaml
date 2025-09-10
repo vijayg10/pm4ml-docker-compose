@@ -264,7 +264,7 @@ services:
       - "8404:8404"  # Stats interface
     volumes:
       - ./docker/haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
-      - ./docker/haproxy/certs:/etc/ssl/certs:ro
+      - ./docker/certbot/certs:/etc/ssl/certs:ro
     depends_on:
       - frontend
       - experience-api

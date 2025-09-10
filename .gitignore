@@ -3,4 +3,6 @@ docker/vault/tmp
 .idea/
 core-connector-config.env
 docker/haproxy/certs/*.pem
+docker/certbot/etc
+docker/certbot/certs
 *-IGNORE*
