@@ -45,13 +45,13 @@
   "failureFactor": 30,
   "users": [
     {
-      "username" : "test",
+      "username" : "__PORTAL_USER__",
       "enabled": true,
       "totp": false,
       "emailVerified": false,
-      "firstName": "test",
-      "lastName": "test",
-      "credentials" : [{ "type" : "password", "value" : "test" }],
+      "firstName": "__PORTAL_USER__",
+      "lastName": "__PORTAL_USER__",
+      "credentials" : [{ "type" : "password", "value" : "__PORTAL_PASSWORD__" }],
       "realmRoles": ["offline_access", "uma_auhtorization"],
       "clientRoles": {
         "realm-management": [ "view-users" ]

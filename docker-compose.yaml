@@ -19,10 +19,14 @@ services:
       - KEYCLOAK_FRONTEND_URL=https://portal.${PM4ML_DOMAIN}/auth
       - KEYCLOAK_IMPORT=/tmp/pm4ml-realm.json
       - DB_VENDOR=h2
+      - PORTAL_USER=${PORTAL_USER:-test}
+      - PORTAL_PASSWORD=${PORTAL_PASSWORD-test}
     volumes:
-      - ./docker/keycloak-realm.json:/tmp/pm4ml-realm.json
+      - ./docker/keycloak/keycloak-realm.json:/tmp/pm4ml-realm.json.template
+      - ./docker/keycloak/replace-portal-user.sh:/usr/local/bin/replace-portal-user.sh
     ports:
       - "8080:8080"
+    entrypoint: ["/bin/sh", "-c", "/usr/local/bin/replace-portal-user.sh && /opt/jboss/tools/docker-entrypoint.sh -b 0.0.0.0"]
     profiles:
       - portal
 
@@ -59,7 +63,7 @@ services:
       - portal
 
   management-api:
-    image: pm4ml/mojaloop-payment-manager-management-api:6.8.2
+    image: pm4ml/mojaloop-payment-manager-management-api:6.9.0
     environment:
       - AUTH_ENABLED=true
       - CACHE_SYNC_INTERVAL_SECONDS=30
