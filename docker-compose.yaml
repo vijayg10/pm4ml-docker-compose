@@ -127,7 +127,7 @@ services:
     ports:
       - "6060:6060"
     environment:
-      - API_BASE_URL=https://ttk.${PM4ML_DOMAIN}
+      # - API_BASE_URL=https://ttk.${PM4ML_DOMAIN}
       - AUTH_ENABLED=FALSE
     command:
       - sh
@@ -273,8 +273,6 @@ services:
       - ttk-frontend
       - prometheus
     restart: unless-stopped
-    profiles:
-      - gateway
 
   # envoy-gateway:
   #   container_name: envoy-gateway
@@ -309,8 +307,18 @@ services:
   #   #   - redis
   #   #   - test-backend
   #   #   - keycloak
-  #   profiles:
-  #     - gateway
+
+  portainer:
+    image: portainer/portainer-ce:lts
+    container_name: portainer
+    ports:
+      - "9443:9443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+    restart: always
+    profiles:
+      - admin
 
 networks:
   default:
@@ -318,3 +326,4 @@ networks:
 
 volumes:
   vault-data:
+  portainer_data:
